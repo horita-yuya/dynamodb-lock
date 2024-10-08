@@ -1,5 +1,6 @@
 import {
   ConditionalCheckFailedException,
+  DeleteItemCommand,
   type DynamoDBClient,
   GetItemCommand,
   UpdateItemCommand,
@@ -19,7 +20,7 @@ type LockedValue =
 
 type UnixTimestampMillis = Date | number;
 
-async function getEventuallyConsistentValue(
+async function getValue(
   client: DynamoDBClient,
   tableName: string,
   hashKeyName: string,
@@ -79,7 +80,7 @@ async function updateValue(
 
 type LockResult = "acquired" | "locked" | "expired";
 
-async function getLock(
+async function lockValue(
   client: DynamoDBClient,
   tableName: string,
   hashKeyName: string,
@@ -88,7 +89,7 @@ async function getLock(
   now: number,
 ): Promise<LockResult> {
   try {
-    const lock = await client.send(
+    await client.send(
       new UpdateItemCommand({
         TableName: tableName,
         Key: {
@@ -108,8 +109,6 @@ async function getLock(
       }),
     );
 
-    console.log(lock.Attributes);
-
     return "acquired";
   } catch (error) {
     if (error instanceof ConditionalCheckFailedException) {
@@ -126,6 +125,22 @@ async function getLock(
   }
 }
 
+async function unlockValue(
+  client: DynamoDBClient,
+  tableName: string,
+  hashKeyName: string,
+  hashKey: string,
+) {
+  await client.send(
+    new DeleteItemCommand({
+      TableName: tableName,
+      Key: {
+        [hashKeyName]: { S: hashKey },
+      },
+    }),
+  );
+}
+
 export async function getLockedValue(
   client: DynamoDBClient,
   {
@@ -134,33 +149,31 @@ export async function getLockedValue(
     hashKey,
     now,
     getNewValue,
-    ignoreLock,
-    tolerance = 5000,
+    lockDuration = 5000,
   }: {
     tableName: string;
     hashKeyAttributeName: string;
     hashKey: string;
     now: UnixTimestampMillis;
-    tolerance?: number;
-    ignoreLock?: boolean;
+    lockDuration?: number;
     getNewValue: () => Promise<{ value: string; ttl: number }>;
   },
-): Promise<string | null> {
-  const currentValue = await getEventuallyConsistentValue(
+): Promise<string> {
+  const currentValue = await getValue(
     client,
     tableName,
     hashKeyAttributeName,
     hashKey,
   );
+  const nowUnixTime = typeof now === "number" ? now : now.getTime();
 
   if (currentValue.hashKey === null) {
-    const nowUnixTime = typeof now === "number" ? now : now.getTime();
-    const result = await getLock(
+    const result = await lockValue(
       client,
       tableName,
       hashKeyAttributeName,
       `${hashKey}:initial`,
-      nowUnixTime + tolerance,
+      nowUnixTime + lockDuration,
       nowUnixTime,
     );
 
@@ -179,16 +192,67 @@ export async function getLockedValue(
       }
 
       case "locked":
-        if (ignoreLock) {
-          return null;
-        }
-
-        throw new Error(`Should retry. ${hashKey} is locked`);
+        throw new Error(
+          `Another process is updating key:${hashKey} value. You should retry.`,
+        );
 
       case "expired":
-        break;
+        await unlockValue(
+          client,
+          tableName,
+          hashKeyAttributeName,
+          `${hashKey}:initial`,
+        );
+        return await getLockedValue(client, {
+          tableName,
+          hashKeyAttributeName,
+          hashKey,
+          now,
+          getNewValue,
+        });
     }
-  } else {
-    return currentValue.value;
   }
+
+  if (currentValue.ttl < nowUnixTime) {
+    const result = await lockValue(
+      client,
+      tableName,
+      hashKeyAttributeName,
+      `${hashKey}:${currentValue.ttl}`,
+      nowUnixTime + lockDuration,
+      nowUnixTime,
+    );
+
+    switch (result) {
+      case "acquired": {
+        const { value, ttl } = await getNewValue();
+        await updateValue(
+          client,
+          tableName,
+          hashKeyAttributeName,
+          hashKey,
+          value,
+          ttl,
+        );
+        return value;
+      }
+
+      case "locked":
+        throw new Error(
+          `Another process is updating key:${hashKey} value. You should retry.`,
+        );
+
+      case "expired":
+        await unlockValue(client, tableName, hashKeyAttributeName, hashKey);
+        return await getLockedValue(client, {
+          tableName,
+          hashKeyAttributeName,
+          hashKey,
+          now,
+          getNewValue,
+        });
+    }
+  }
+
+  return currentValue.value;
 }
