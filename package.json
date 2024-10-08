@@ -18,7 +18,8 @@
   },
   "scripts": {
     "test": "vitest",
-    "build": "tsc index.ts --declaration --declarationMap --outDir dist"
+    "build": "tsc index.ts --declaration --declarationMap --outDir dist",
+    "pub": "yarn build && npm publish --access public"
   },
   "files": ["dist", "index.ts", "package.json", "README.md"],
   "exports": {
