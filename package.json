@@ -1,5 +1,5 @@
 {
-  "name": "dynamodb-lock",
+  "name": "@hy/dynamodb-lock",
   "version": "1.0.0",
   "main": "dist/index.js",
   "license": "MIT",
@@ -20,7 +20,7 @@
     "test": "vitest",
     "build": "tsc index.ts --declaration --declarationMap --outDir dist"
   },
-  "files": ["dist", "index.ts", "package.json"],
+  "files": ["dist", "index.ts", "package.json", "README.md"],
   "exports": {
     ".": {
       "import": {

@@ -8,7 +8,7 @@ For example, when a token is issued by AWS Lambda functions, you might want to c
 
 ```typescript
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { getLockedValue } from "dynamodb-lock";
+import { getLockedValue } from "@hy/dynamodb-lock";
 
 const client = new DynamoDBClient({ region: "us-west-2" });
 
