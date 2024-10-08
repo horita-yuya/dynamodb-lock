@@ -1573,6 +1573,13 @@ dockerode@^3.3.5:
     docker-modem "^3.0.0"
     tar-fs "~2.0.1"
 
+dynamodb-locked-value@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/dynamodb-locked-value/-/dynamodb-locked-value-1.2.0.tgz#7390d74339ad87f777d28947d54f87582ef273c6"
+  integrity sha512-PHgSf1Cu3ZwrCXeQQRqE+5AeOaAEGmTh/3VSBkrW4AAhtz8Ka/k5CzO+EUMiP0LBVnFvJJ07GrkqzIPY30Eu+Q==
+  dependencies:
+    "@aws-sdk/client-dynamodb" "^3.665.0"
+
 eastasianwidth@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/eastasianwidth/-/eastasianwidth-0.2.0.tgz#696ce2ec0aa0e6ea93a397ffcf24aa7840c827cb"
