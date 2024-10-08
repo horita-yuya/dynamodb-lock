@@ -4,11 +4,17 @@ Utility to create and manage locks in DynamoDB.
 There are times to share some values between multiple instances of a service. 
 For example, when a token is issued by AWS Lambda functions, you might want to care about rate limits or costs issuing the token.
 
+## Installation
+
+```bash
+npm install dynamodb-locked-value
+```
+
 ## Usage
 
 ```typescript
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { getLockedValue } from "@hy/dynamodb-lock";
+import { getLockedValue } from "dynamodb-locked-value";
 
 const client = new DynamoDBClient({ region: "us-west-2" });
 

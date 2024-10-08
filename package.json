@@ -1,5 +1,5 @@
 {
-  "name": "dynamolock",
+  "name": "dynamodb-locked-value",
   "version": "1.0.0",
   "main": "dist/index.js",
   "license": "MIT",
