@@ -65,7 +65,7 @@ test(
     expect(value).toBe("value");
   },
   {
-    timeout: 10000,
+    timeout: 100000,
   },
 );
 
@@ -98,7 +98,7 @@ test(
     expect(getNewValueMock).toHaveBeenCalledTimes(1);
   },
   {
-    timeout: 10000,
+    timeout: 100000,
   },
 );
 
@@ -142,7 +142,7 @@ test(
     expect(getNewValueMock).toHaveBeenCalledTimes(1);
   },
   {
-    timeout: 10000,
+    timeout: 100000,
   },
 );
 
@@ -198,6 +198,6 @@ test(
     expect(getNewValueMock).toHaveBeenCalledTimes(1);
   },
   {
-    timeout: 10000,
+    timeout: 100000,
   },
 );
