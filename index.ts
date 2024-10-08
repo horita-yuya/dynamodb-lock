@@ -159,6 +159,8 @@ export async function getLockedValue(
     getNewValue: () => Promise<{ value: string; ttl: number }>;
   },
 ): Promise<string> {
+  // All copies of data usually reach consistency within a second.
+  // https://aws.amazon.com/dynamodb/faqs/?nc1=h_ls
   const currentValue = await getValue(
     client,
     tableName,
@@ -213,7 +215,8 @@ export async function getLockedValue(
     }
   }
 
-  if (currentValue.ttl < nowUnixTime) {
+  // Update the value before 3 minutes from the expiration time.
+  if (currentValue.ttl < nowUnixTime + 3 * 60 * 1000) {
     const result = await lockValue(
       client,
       tableName,

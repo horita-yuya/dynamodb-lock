@@ -1,10 +1,11 @@
 {
   "name": "dynamodb-lock",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/index.js",
   "license": "MIT",
-  "scripts": {
-    "test": "vitest"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/horita-yuya/dynamodb-lock"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.3",
@@ -14,5 +15,19 @@
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.665.0"
+  },
+  "scripts": {
+    "test": "vitest",
+    "build": "tsc index.ts --declaration --declarationMap --outDir dist"
+  },
+  "files": ["dist", "index.ts", "package.json"],
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "./package.json": "./package.json"
   }
 }
