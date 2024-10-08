@@ -215,6 +215,7 @@ export async function getLockedValue(
     }
   }
 
+  const expired = currentValue.ttl < nowUnixTime;
   // Update the value before 3 minutes from the expiration time.
   if (currentValue.ttl < nowUnixTime + 3 * 60 * 1000) {
     const result = await lockValue(
@@ -241,19 +242,28 @@ export async function getLockedValue(
       }
 
       case "locked":
-        throw new Error(
-          `Another process is updating key:${hashKey} value. You should retry.`,
-        );
+        if (expired) {
+          throw new Error(
+            `Another process is updating key:${hashKey} value. You should retry.`,
+          );
+        }
+
+        return currentValue.value;
 
       case "expired":
         await unlockValue(client, tableName, hashKeyAttributeName, hashKey);
-        return await getLockedValue(client, {
-          tableName,
-          hashKeyAttributeName,
-          hashKey,
-          now,
-          getNewValue,
-        });
+
+        if (expired) {
+          return await getLockedValue(client, {
+            tableName,
+            hashKeyAttributeName,
+            hashKey,
+            now,
+            getNewValue,
+          });
+        }
+
+        return currentValue.value;
     }
   }
 
