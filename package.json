@@ -5,7 +5,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/horita-yuya/dynamodb-lock.git"
+    "url": "git@github.com:horita-yuya/dynamodb-lock.git"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.3",
@@ -20,12 +20,7 @@
     "test": "vitest",
     "build": "tsc index.ts --declaration --declarationMap --outDir dist"
   },
-  "files": [
-    "dist",
-    "index.ts",
-    "package.json",
-    "README.md"
-  ],
+  "files": ["dist", "index.ts", "package.json", "README.md"],
   "exports": {
     ".": {
       "import": {
